@@ -23,7 +23,7 @@ class Game{
 	  }
 
 	  // first animation is set as soon as the character is spawned
-	  this.animations = ["standing", "walking"]
+	  this.animations = ["standing", "walking", "dancing"]
 	  this.assetsPath = 'fbx/';
 	  this.animations.forEach( function(animation){ options.assets.push(
 		`${game.assetsPath}${animation}.fbx`
@@ -45,8 +45,6 @@ class Game{
         this.scene = new THREE.Scene();
 	    this.scene.background = new THREE.Color( 0xa0a0a0 );
 	    this.scene.fog = new THREE.Fog( 0xa0a0a0, 200, 1000 );
-		var grid = new THREE.GridHelper( 2000, 40, 0x000000, 0x000000 )
-	    this.scene.add( grid );
 
         // ground
         var mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry    ( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999,     depthWrite: false } ) );
@@ -105,12 +103,21 @@ class Game{
 	  game.player.move = {forward: 0, direction: 0}
 	  document.addEventListener("keydown", event => {
 		console.log(event);
-		if (event.code === "KeyW") game.player.move.forward = 1;
+		if (event.code === "KeyW"){
+		  game.player.move.forward = 1;
+		  game.action = 'walking';
+		}
+		if (event.code === "Space"){
+		  game.action = 'dancing';
+		}
 		if (event.code === "KeyA") game.player.move.direction = 3;
 		if (event.code === "KeyD") game.player.move.direction = -3;
 	  })
 	  document.addEventListener("keyup", event => {
-		if (event.code === "KeyW") game.player.move.forward = 0;
+		if (event.code === "KeyW"){
+		  game.player.move.forward = 0;
+		  game.action = 'standing';
+		}
 		if (event.code === "KeyA") game.player.move.direction = 0;
 		if (event.code === "KeyD") game.player.move.direction = 0;
 	  })
@@ -125,7 +132,7 @@ class Game{
 	  action.time = 0
 	  this.player.mixer.stopAllAction();
 	  this.player.action = name;
-	  action.fadeIn(0.5);
+	  //action.fadeIn(0.1);
 	  action.play();
 	}
 
@@ -156,7 +163,7 @@ class Game{
          collect.quaternion.set(0.07133122876303646, -0.17495722675648318, -0.006135162916936811, -0.9819695435118246);
          collect.parent = this.player.object;
          this.player.cameras = { front, back, wide, overhead, collect };
-         game.activeCamera = this.player.cameras.front;
+         game.activeCamera = this.player.cameras.back;
      }
 
 	animate() {
@@ -174,11 +181,15 @@ class Game{
 		  this.player.object.rotateY(this.player.move.direction * dt);
 		}
 
-		/*
-        if (this.player.cameras!=undefined && this.player.cameras.active!=undefined){
-            this.camera.position.lerp(this.player.cameras.active.getWorldPosition(new THREE.Vector3()), 0.05);
-            this.camera.quaternion.slerp(this.player.cameras.active.getWorldQuaternion(new THREE.Quaternion()), 0.05);
-        }*/
+        if (this.player.object && this.player.cameras!=undefined && this.player.cameras.active!=undefined){
+		  var player_position = this.player.object.position.clone();
+		  player_position.y += 100
+		  var camera_position = this.player.object.position.clone();
+		  camera_position.y += 200
+		  camera_position.z -= 200
+		  this.camera.position.set(camera_position.x, camera_position.y, camera_position.z)
+		  this.camera.lookAt(player_position);
+        }
 
         this.renderer.render( this.scene, this.camera );
     }
