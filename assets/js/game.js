@@ -77,7 +77,7 @@ class Game{
 
 		this.renderer = new THREE.WebGLRenderer();
         this.renderer.setSize( window.innerWidth, window.innerHeight );
-        document.body.appendChild( this.renderer.domElement );
+        document.getElementById("renderer").appendChild( this.renderer.domElement );
 
 		// model setup
 	    const loader = new THREE.FBXLoader();

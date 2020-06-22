@@ -1,1 +1,9 @@
-<h1>elixir_mmorpg</h1>
+<div id="renderer"></div>
+<div class="position:absolute">
+<div class="flex:true">
+<img src="https://hexdocs.pm/elixir/assets/logo.png"/>
+<img width=100 src="https://upload.wikimedia.org/wikipedia/commons/2/25/WebGL_Logo.svg"/>
+<span style="font-size:40px;">elixir_mmorpg</span>
+</div>
+<p>A broswer based MMORPG built in Elixir and WebGL</p>
+</div>
