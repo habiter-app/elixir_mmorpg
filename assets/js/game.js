@@ -122,9 +122,27 @@ class Game{
 		if (event.code === "KeyD") game.player.move.direction = 0;
 	  })
 
-	  game.createCameras();
-
+	  game.createDummyEnvironment();
 	}
+
+    createDummyEnvironment(){
+        const env = new THREE.Group();
+        env.name = "Environment";
+        this.scene.add(env);
+
+        const geometry = new THREE.BoxBufferGeometry( 150, 150, 150 );
+        const material = new THREE.MeshBasicMaterial( { color: 0x285064 } );
+
+        for(let x=-1000; x<1000; x+=300){
+            for(let z=-1000; z<1000; z+=300){
+                const block = new THREE.Mesh(geometry, material);
+                block.position.set(x, 75, z);
+                env.add(block);
+            }
+        }
+
+        this.environmentProxy = env;
+    }
 
     set action(name){
 	  const animation = this.player[name]
@@ -135,36 +153,6 @@ class Game{
 	  //action.fadeIn(0.1);
 	  action.play();
 	}
-
-    set activeCamera(object){
-        this.player.cameras.active = object;
-    }
-
-    createCameras(){
-         const offset = new THREE.Vector3(0, 60, 0);
-         const front = new THREE.Object3D();
-         front.position.set(112, 100, 200);
-         front.quaternion.set(0.07133122876303646, -0.17495722675648318,     -0.006135162916936811, -0.9819695435118246);
-         front.parent = this.player.object;
-         const back = new THREE.Object3D();
-         back.position.set(0, 100, -250);
-         back.quaternion.set(-0.001079297317118498, -0.9994228131639347,     -0.011748701462123836, -0.031856610911161515);
-         back.parent = this.player.object;
-         const wide = new THREE.Object3D();
-         wide.position.set(178, 139, 465);
-         wide.quaternion.set(0.07133122876303646, -0.17495722675648318,     -0.006135162916936811, -0.9819695435118246);
-         wide.parent = this.player.object;
-         const overhead = new THREE.Object3D();
-         overhead.position.set(0, 400, 0);
-         overhead.quaternion.set(0.02806727427333993, 0.7629212874133846    , 0.6456029820939627, 0.018977008134915086);
-         overhead.parent = this.player.object;
-         const collect = new THREE.Object3D();
-         collect.position.set(40, 82, 94);
-         collect.quaternion.set(0.07133122876303646, -0.17495722675648318, -0.006135162916936811, -0.9819695435118246);
-         collect.parent = this.player.object;
-         this.player.cameras = { front, back, wide, overhead, collect };
-         game.activeCamera = this.player.cameras.back;
-     }
 
 	animate() {
         const game = this;
@@ -177,11 +165,11 @@ class Game{
 		}
 
 		if (this.player.object != undefined){
-		  if (this.player.move.forward > 0) this.player.object.translateZ(dt*100);
+		  // player object translations
+		  if (this.player.move.forward > 0) this.moveForward(dt);
 		  this.player.object.rotateY(this.player.move.direction * dt);
-		}
 
-        if (this.player.object && this.player.cameras!=undefined && this.player.cameras.active!=undefined){
+		  // camera tracking
 		  var player_position = this.player.object.position.clone();
 		  player_position.y += 100
 		  var camera_position = this.player.object.position.clone();
@@ -193,6 +181,24 @@ class Game{
 
         this.renderer.render( this.scene, this.camera );
     }
+
+    moveForward(dt){
+	  const player_position = this.player.object.position.clone();
+	  player_position.y += 100
+	  let dir = this.player.object.getWorldDirection();
+	  let raycaster = new THREE.Raycaster(player_position, dir);
+	  let blocked = false;
+
+	  for(let box of this.environmentProxy.children){
+		const intersect = raycaster.intersectObject(box);
+		if (intersect.length > 0 && intersect[0].distance < 50){
+		  blocked = true;
+		  break;
+		}
+	  }
+
+	  if (!blocked) this.player.object.translateZ(dt*100);
+	}
 }
 
 export default Game
