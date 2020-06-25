@@ -2,6 +2,10 @@
 
 An example on how to build a 3D MMORPG (massive multiplayer online role play game) with Elixir and ThreeJS
 
+## 3D Browser based Interaction
+
+We use WebGL thourgh the library three.js, I followed this udemy course: https://www.udemy.com/course/create-a-3d-rpg-game-with-threejs
+
 To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`
