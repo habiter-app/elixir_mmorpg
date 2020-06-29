@@ -42,13 +42,13 @@ class Game{
 
 		// scene setup, light camera and background.
         this.scene = new THREE.Scene();
-	    this.scene.background = new THREE.Color( 0xa0a0a0 );
+	    this.scene.background = new THREE.Color( 0x2edaff  );
 
         let light = new THREE.HemisphereLight( 0xffffff, 0x444444, 1 );
         light.position.set( 0, 500, 0 );
         this.scene.add( light );
  
-        light = new THREE.DirectionalLight( 0xffffff );
+        light = new THREE.DirectionalLight( 0xffffff, 0.1 );
         light.position.set( 0, 200, 100 );
         light.castShadow = true;
         light.shadow.mapSize.width = 2048;
@@ -61,13 +61,15 @@ class Game{
         this.scene.add( light );
 
         // ground
+		/*
         var mesh = new THREE.Mesh( new THREE.PlaneBufferGeometry    ( 2000, 2000 ), new THREE.MeshPhongMaterial( { color: 0x999999,     depthWrite: false } ) );
         mesh.rotation.x = - Math.PI / 2;
         //mesh.position.y = -100;
         mesh.receiveShadow = true;
         this.scene.add( mesh );
+		*/
 
-	    var light_2 = new THREE.PointLight( 0x000000, 1000, 100 );
+	    var light_2 = new THREE.PointLight( 0x000000, 1, 100 );
 	    light_2.position.set( 50, 50, 50 );
 	    this.scene.add( light_2 );
 
@@ -137,15 +139,14 @@ class Game{
 	  game.loadEnvironment(loader);
 	}
 
-  
 	loadEnvironment(loader){
 	  const game = this;
 	  loader.load( `${this.assetsPath}game_environment.fbx`, function(object){
 		game.scene.add(object);
 		object.receiveShadow = true;
 		object.name = "Environment"
-		object.scale.set(0.6, 0.6, 0.6);
-		object.rotateY( Math.PI / 1.5);
+		//object.scale.set(0.6, 0.6, 0.6);
+		object.rotateY( Math.PI );
 		object.position.y = -20
         object.traverse( function ( child ) {
             if ( child.isMesh ) {

@@ -1,5 +1,5 @@
 <div id="renderer"></div>
-<div class="position:absolute">
+<div style="position:absolute;top: 0;padding: 40px;background: #13861361;margin: 40px;">
 <div class="flex:true">
 <img src="https://hexdocs.pm/elixir/assets/logo.png"/>
 <img width=100 src="https://upload.wikimedia.org/wikipedia/commons/2/25/WebGL_Logo.svg"/>
