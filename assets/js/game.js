@@ -207,6 +207,31 @@ class Game{
     }
 
     moveForward(dt){
+
+	  /* raycasting (object collision) */
+	  const player_position = this.player.object.position.clone();
+	  let dir = this.player.object.getWorldDirection();
+	  let raycaster_foot = new THREE.Raycaster(player_position, dir);
+	  player_position.y += 1
+	  let raycaster_head = new THREE.Raycaster(player_position, dir);
+	  let blocked = false;
+
+	  for(let box of this.environmentProxy.children){
+		const intersect_foot = raycaster_foot.intersectObject(box);
+		const intersect_head = raycaster_foot.intersectObject(box);
+		if (intersect_foot.length > 0 && intersect_foot[0].distance < 50){
+		  blocked = true;
+		  break;
+		}
+		if (intersect_head.length > 0 && intersect_head[0].distance < 50){
+		  blocked = true;
+		  break;
+		}
+	  }
+
+	  if (blocked) return;
+
+	  /* move on the surface of the cylinder */
 	  var rotation = Math.cos(this.player.object.rotation.y)
 	  var translation = Math.sin(this.player.object.rotation.y)
 	  console.log(rotation, translation)
@@ -216,24 +241,6 @@ class Game{
 		THREE.Math.degToRad(5*dt*rotation)
 	  );
 	  this.player.object.position.x += (dt*150*translation);
-
-	  /* raycasting (object collision)
-	  const player_position = this.player.object.position.clone();
-	  player_position.y += 100
-	  let dir = this.player.object.getWorldDirection();
-	  let raycaster = new THREE.Raycaster(player_position, dir);
-	  let blocked = false;
-
-	  for(let box of this.environmentProxy.children){
-		const intersect = raycaster.intersectObject(box);
-		if (intersect.length > 0 && intersect[0].distance < 50){
-		  blocked = true;
-		  break;
-		}
-	  }
-
-	  if (!blocked) this.player.object.translateZ(dt*100);
-	  */
 	}
 }
 
