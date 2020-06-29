@@ -1,5 +1,6 @@
 import Preloader from "./preloader"
 import { FBXLoader } from "./vendor/FBXLoader"
+import { rotateAboutCenter } from "./geometry"
 
 class Game{
     // preload game assets
@@ -44,6 +45,12 @@ class Game{
         this.scene = new THREE.Scene();
 	    this.scene.background = new THREE.Color( 0x2edaff  );
 
+		// grid helper
+	    var size = 1000;
+		var divisions = 10;
+		var gridHelper = new THREE.GridHelper( size, divisions );
+		//this.scene.add( gridHelper );
+
         let light = new THREE.HemisphereLight( 0xffffff, 0x444444, 1 );
         light.position.set( 0, 500, 0 );
         this.scene.add( light );
@@ -73,7 +80,7 @@ class Game{
 	    light_2.position.set( 50, 50, 50 );
 	    this.scene.add( light_2 );
 
-		this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 );
+		this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 10000 );
 	    this.camera.position.set(112, 100, 200);
 	    this.camera.quaternion.set(0.07133122876303646, -0.17495722675648318,     -0.006135162916936811, -0.9819695435118246);
 
@@ -117,6 +124,9 @@ class Game{
 	  game.player.move = {forward: 0, direction: 0}
 	  document.addEventListener("keydown", event => {
 		console.log(event);
+		console.log(game.player.object.rotation);
+		console.log(game.player.object.position);
+		console.log(game.player.object.quaternion);
 		if (event.code === "KeyW"){
 		  game.player.move.forward = 1;
 		  game.action = 'walking';
@@ -180,14 +190,15 @@ class Game{
 		if (this.player.object != undefined){
 		  // player object translations
 		  if (this.player.move.forward > 0) this.moveForward(dt);
-		  this.player.object.rotateY(this.player.move.direction * dt);
+		  this.player.object.rotation.y +=  (this.player.move.direction * dt);
 
 		  // camera tracking
 		  var player_position = this.player.object.position.clone();
-		  player_position.y += 100
 		  var camera_position = this.player.object.position.clone();
-		  camera_position.y += 200
-		  camera_position.z -= 200
+		  var camera_distance = 500
+		  var camera_angle = (Math.PI / 4) + this.player.object.rotation.x
+		  camera_position.y += Math.sin(camera_angle) * (camera_distance - 150)
+		  camera_position.z -= Math.cos(camera_angle) * camera_distance
 		  this.camera.position.set(camera_position.x, camera_position.y, camera_position.z)
 		  this.camera.lookAt(player_position);
         }
@@ -196,6 +207,17 @@ class Game{
     }
 
     moveForward(dt){
+	  var rotation = Math.cos(this.player.object.rotation.y)
+	  var translation = Math.sin(this.player.object.rotation.y)
+	  console.log(rotation, translation)
+	  rotateAboutCenter(
+		this.player.object,
+		new THREE.Vector3(this.player.object.position.x, -2000, 0),
+		THREE.Math.degToRad(5*dt*rotation)
+	  );
+	  this.player.object.position.x += (dt*150*translation);
+
+	  /* raycasting (object collision)
 	  const player_position = this.player.object.position.clone();
 	  player_position.y += 100
 	  let dir = this.player.object.getWorldDirection();
@@ -211,6 +233,7 @@ class Game{
 	  }
 
 	  if (!blocked) this.player.object.translateZ(dt*100);
+	  */
 	}
 }
 
