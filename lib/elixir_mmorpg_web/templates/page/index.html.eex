@@ -1,4 +1,5 @@
 <div id="renderer"></div>
+
 <div style="position:absolute;top: 0;padding: 40px;background: #13861361;margin: 40px;">
 <div class="flex:true">
 <img src="https://hexdocs.pm/elixir/assets/logo.png"/>
@@ -7,3 +8,8 @@
 </div>
 <p>A broswer based MMORPG built in Elixir and WebGL</p>
 </div>
+
+<div id="message" style="display:none;position:absolute;bottom: 5%;width: 50%;padding: 40px;background: #f6fff6ad;left: 25%;text-align: center;font-size: 30px;font-family: monospace;">
+press <b>SPACEBAR</b> to interact with <b>chair</b>
+</div>
+

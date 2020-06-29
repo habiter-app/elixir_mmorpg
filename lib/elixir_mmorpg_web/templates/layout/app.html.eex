@@ -7,7 +7,7 @@
     <title>ElixirMmorpg · Phoenix Framework</title>
     <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
   </head>
-  <body>
+  <body style="margin:0px">
     <main role="main">
       <%= render @view_module, @view_template, assigns %>
     </main>

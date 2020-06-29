@@ -23,7 +23,7 @@ class Game{
 	  }
 
 	  // first animation is set as soon as the character is spawned
-	  this.animations = ["standing", "walking", "dancing"]
+	  this.animations = ["standing", "walking", "dancing", "sitting", "sit-look-around"]
 	  this.assetsPath = 'fbx/';
 	  this.animations.forEach( function(animation){ options.assets.push(
 		`${game.assetsPath}${animation}.fbx`
@@ -129,10 +129,23 @@ class Game{
 		console.log(game.player.object.quaternion);
 		if (event.code === "KeyW"){
 		  game.player.move.forward = 1;
+
 		  game.action = 'walking';
 		}
+		// Space either plays interaction or 'dancing' by default
 		if (event.code === "Space"){
-		  game.action = 'dancing';
+		  this.playing_interaction = false
+		  for(var interaction_name in this.interactions){
+			var interaction = this.interactions[interaction_name]
+			if(interaction["triggered"]){
+			  interaction.interact(interaction["object"])
+			  this.playing_interaction = true
+			  interaction["triggered"] = false
+			}
+		  }
+		  if(!this.playing_interaction){
+			game.action = 'dancing';
+		  }
 		}
 		if (event.code === "KeyA") game.player.move.direction = 3;
 		if (event.code === "KeyD") game.player.move.direction = -3;
@@ -145,8 +158,45 @@ class Game{
 		if (event.code === "KeyA") game.player.move.direction = 0;
 		if (event.code === "KeyD") game.player.move.direction = 0;
 	  })
-
+	  
+	  // environment
 	  game.loadEnvironment(loader);
+
+	}
+
+    loadInteractions(){
+	  this.interactions = {'OfficeChair_02': {
+		interact: game.interaction_sitOnChair, 
+		"object": null,
+		"distance": 100,
+		"triggered": false,
+		"action": "sitting"
+		}
+	  };
+	  game = this
+
+	  for(var interaction_name in this.interactions){
+		game.environmentProxy.children.forEach(function(mesh){
+		  if( mesh.name === interaction_name ){
+			game.interactions[interaction_name]["object"] = mesh;
+		  }
+		})
+	  }
+	}
+
+    interaction_sitOnChair(mesh){
+	  // follows example of hardcoded value for the chair of
+	  // the current environment
+	  game.player.object.position.x = -1 * mesh.position.x + 60
+	  game.player.object.position.y = mesh.position.y
+	  game.player.object.position.z = -1 * mesh.position.z
+	  game.player.object.rotation.y = -4.8
+
+	  game.action = "sitting"
+	  game.player.mixer.addEventListener( 'finished', () => {
+		game.player.object.position.x -= 25
+		game.action = "sit-look-around"
+	  })
 	}
 
 	loadEnvironment(loader){
@@ -164,6 +214,7 @@ class Game{
                     child.receiveShadow = true;
 			}});
 		 game.environmentProxy = object;
+		 game.loadInteractions()
 	  });
 	}
 
@@ -174,6 +225,8 @@ class Game{
 	  this.player.mixer.stopAllAction();
 	  this.player.action = name;
 	  //action.fadeIn(0.1);
+	  if (name=='sitting') action.loop = THREE.LoopOnce;
+	  //if (name=="sit-look-around") action.fadeIn(0.5)
 	  action.play();
 	}
 
@@ -183,10 +236,12 @@ class Game{
 
         requestAnimationFrame( function(){ game.animate(); } );
 	   
+	  // animation mixer
 	    if (this.player.mixer != undefined && this.mode == this.modes.ACTIVE){
 		  this.player.mixer.update(dt);
 		}
 
+	  // movements
 		if (this.player.object != undefined){
 		  // player object translations
 		  if (this.player.move.forward > 0) this.moveForward(dt);
@@ -202,6 +257,32 @@ class Game{
 		  this.camera.position.set(camera_position.x, camera_position.y, camera_position.z)
 		  this.camera.lookAt(player_position);
         }
+
+	  // interactions
+	    if (this.interactions != undefined && this.player.object != undefined){
+		  for(var interaction_name in this.interactions){
+			var interaction = this.interactions[interaction_name];
+
+			// for some unknown reason we need to adjust position of the mesh
+			var object_adjusted_position = interaction["object"].position.clone();
+			object_adjusted_position.z *= -1
+			object_adjusted_position.x *= -1
+
+			var curr_distance = this.player.object.position.distanceTo(
+			  object_adjusted_position
+			)
+			console.log(curr_distance);
+			if(curr_distance <= interaction["distance"]){
+			  interaction["triggered"] = true
+			  document.getElementById("message").style.display = "block"
+			}
+			else{
+			  document.getElementById("message").style.display = "none"
+			  interaction["triggered"] = false
+			}
+		  }
+		}
+
 
         this.renderer.render( this.scene, this.camera );
     }
