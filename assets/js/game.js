@@ -194,7 +194,6 @@ class Game{
 
 	  game.action = "sitting"
 	  game.player.mixer.addEventListener( 'finished', () => {
-		game.player.object.position.x -= 25
 		game.action = "sit-look-around"
 	  })
 	}
