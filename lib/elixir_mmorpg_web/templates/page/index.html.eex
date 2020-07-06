@@ -1,4 +1,19 @@
 <div id="renderer"></div>
+<style>
+#sfx-btn{
+position: absolute;
+right: 15px;
+top: 15px;
+height: 40px;
+border: none;
+background:#3B53A2;
+font-size: 25px;
+color: #fff;
+}
+</style>
+
+
+<button id="sfx-btn"><i class="fas fa-volume-up">Sound On</i></button>
 
 <div style="position:absolute;top: 0;padding: 40px;background: #13861361;margin: 40px;">
 <div class="flex:true">

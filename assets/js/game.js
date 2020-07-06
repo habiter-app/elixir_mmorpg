@@ -1,5 +1,6 @@
 import Preloader from "./preloader"
 import { FBXLoader } from "./vendor/FBXLoader"
+import { SFX } from "./audio"
 import { rotateAboutCenter } from "./geometry"
 
 class Game{
@@ -35,6 +36,10 @@ class Game{
 	  window.onError = function(error){
 		console.error(JSON.stringify(error));
 	  }
+
+	  this.audioAssetsPath = 'sfx/';
+	  this.initSfx()
+	  document.getElementById("sfx-btn").onclick = function(){ game.toggleSound(); };
     }
 
 	// initialises the game scene, camera and objects
@@ -123,13 +128,10 @@ class Game{
 	  //setup keybindings
 	  game.player.move = {forward: 0, direction: 0}
 	  document.addEventListener("keydown", event => {
-		console.log(event);
-		console.log(game.player.object.rotation);
-		console.log(game.player.object.position);
-		console.log(game.player.object.quaternion);
 		if (event.code === "KeyW"){
+		  console.log('KeyW down')
+		  this.sfx.walking.play()
 		  game.player.move.forward = 1;
-
 		  game.action = 'walking';
 		}
 		// Space either plays interaction or 'dancing' by default
@@ -152,7 +154,9 @@ class Game{
 	  })
 	  document.addEventListener("keyup", event => {
 		if (event.code === "KeyW"){
+		  console.log('KeyW up')
 		  game.player.move.forward = 0;
+		  this.sfx.walking.stop()
 		  game.action = 'standing';
 		}
 		if (event.code === "KeyA") game.player.move.direction = 0;
@@ -161,7 +165,6 @@ class Game{
 	  
 	  // environment
 	  game.loadEnvironment(loader);
-
 	}
 
     loadInteractions(){
@@ -217,6 +220,41 @@ class Game{
 	  });
 	}
 
+    toggleSound(){
+        this.mute = !this.mute;
+        const btn = document.getElementById('sfx-btn');
+        
+        if (this.mute){
+            for(let prop in this.sfx){
+                let sfx = this.sfx[prop];
+                if (sfx instanceof SFX) sfx.stop();
+            }
+            btn.innerHTML = 'sound OFF';
+        }else{
+            this.sfx.soundtrack.play();
+            btn.innerHTML = 'sound ON';
+        }
+    }
+
+	initSfx(){
+		this.sfx = {};
+		this.sfx.context = new (window.AudioContext || window.webkitAudioContext)();
+		const list = ['soundtrack', 'walking' ];
+		const game = this;
+		list.forEach(function(item){
+			game.sfx[item] = new SFX({
+				context: game.sfx.context,
+				src:{
+				  mp3:`${game.audioAssetsPath}${item}.mp3`, 
+				  wav:`${game.audioAssetsPath}${item}.wav`
+				},
+				loop: (true),
+				autoplay: (item=='soundtrack'),
+				volume: 0.3
+			});	
+		})
+	}
+
     set action(name){
 	  const animation = this.player[name]
 	  const action = this.player.mixer.clipAction( animation );
@@ -270,7 +308,6 @@ class Game{
 			var curr_distance = this.player.object.position.distanceTo(
 			  object_adjusted_position
 			)
-			console.log(curr_distance);
 			if(curr_distance <= interaction["distance"]){
 			  interaction["triggered"] = true
 			  document.getElementById("message").style.display = "block"
@@ -287,6 +324,7 @@ class Game{
     }
 
     moveForward(dt){
+
 
 	  /* raycasting (object collision) */
 	  const player_position = this.player.object.position.clone();
@@ -314,7 +352,6 @@ class Game{
 	  /* move on the surface of the cylinder */
 	  var rotation = Math.cos(this.player.object.rotation.y)
 	  var translation = Math.sin(this.player.object.rotation.y)
-	  console.log(rotation, translation)
 	  rotateAboutCenter(
 		this.player.object,
 		new THREE.Vector3(this.player.object.position.x, -2000, 0),
